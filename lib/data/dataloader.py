@@ -11,6 +11,7 @@ from torch.utils.data import DataLoader
 from torchvision.datasets import MNIST, CIFAR10, ImageFolder
 from lib.data.datasets import get_cifar_anomaly_dataset
 from lib.data.datasets import get_mnist_anomaly_dataset
+from lib.data.medcity_dataset import MedCityDataset
 
 class Data:
     """ Dataloader containing train and valid sets.
@@ -54,11 +55,22 @@ def load_data(opt):
                                         transforms.ToTensor(),
                                         transforms.Normalize((0.1307,), (0.3081,))])
 
-
         train_ds = MNIST(root='./data', train=True, download=True, transform=transform)
         valid_ds = MNIST(root='./data', train=False, download=True, transform=transform)
         train_ds, valid_ds = get_mnist_anomaly_dataset(train_ds, valid_ds, int(opt.abnormal_class))
 
+    ## MedCity data set, padding by 384px on left and right to make the image a square 3328x3328 image
+    ## then resizing it to isize (1024x1024 for this project) before converting it to a tensor and
+    ## then normalizing
+    elif opt.dataset in ['medcity']:
+        transform = transforms.Compose([transforms.Pad(384,0),
+                                        transforms.Resize((opt.isize, opt.isize)),
+                                        transforms.ToTensor(),
+                                        transforms.Normalize((0.5), (0.5)), ])
+
+        train_ds = MedCityDataset(csv_file='./data/training.csv', root='/media/dl-box/Mammo/Medcity/png', transform=transform)
+        valid_ds = MedCityDataset(csv_file='./data/validation.csv', root='/media/dl-box/Mammo/Medcity/png', transform=transform)
+        
     # FOLDER
     else:
         transform = transforms.Compose([transforms.Resize(opt.isize),

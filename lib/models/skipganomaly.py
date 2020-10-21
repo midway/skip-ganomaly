@@ -65,13 +65,14 @@ class Skipganomaly(BaseModel):
         self.l_con = nn.L1Loss()
         self.l_lat = l2_loss
 
+        num_channels = opt.nc
         ##
         # Initialize input tensors.
-        self.input = torch.empty(size=(self.opt.batchsize, 3, self.opt.isize, self.opt.isize), dtype=torch.float32, device=self.device)
-        self.noise = torch.empty(size=(self.opt.batchsize, 3, self.opt.isize, self.opt.isize), dtype=torch.float32, device=self.device)
+        self.input = torch.empty(size=(self.opt.batchsize, num_channels, self.opt.isize, self.opt.isize), dtype=torch.float32, device=self.device)
+        self.noise = torch.empty(size=(self.opt.batchsize, num_channels, self.opt.isize, self.opt.isize), dtype=torch.float32, device=self.device)
         self.label = torch.empty(size=(self.opt.batchsize,), dtype=torch.float32, device=self.device)
         self.gt = torch.empty(size=(opt.batchsize,), dtype=torch.long, device=self.device)
-        self.fixed_input = torch.empty(size=(self.opt.batchsize, 3, self.opt.isize, self.opt.isize), dtype=torch.float32, device=self.device)
+        self.fixed_input = torch.empty(size=(self.opt.batchsize, num_channels, self.opt.isize, self.opt.isize), dtype=torch.float32, device=self.device)
         self.real_label = torch.ones (size=(self.opt.batchsize,), dtype=torch.float32, device=self.device)
         self.fake_label = torch.zeros(size=(self.opt.batchsize,), dtype=torch.float32, device=self.device)
 
