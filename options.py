@@ -52,6 +52,7 @@ class Options():
         self.parser.add_argument('--manualseed', default=-1, type=int, help='manual seed')
         self.parser.add_argument('--abnormal_class', default='automobile', help='Anomaly class idx for mnist and cifar datasets')
         self.parser.add_argument('--metric', type=str, default='roc', help='Evaluation metric.')
+        self.parser.add_argument('--mediaroot', type=str, default='./data', help='Media root for MedCity images')
 
         ##
         # Train
@@ -74,6 +75,8 @@ class Options():
         self.isTrain = True
         self.opt = None
 
+        self.parser.add_argument('--random_augments', action='store_true', help='Execute random augments on image data.')
+        
     def parse(self):
         """ Parse Arguments.
         """

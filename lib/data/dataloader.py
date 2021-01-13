@@ -11,6 +11,33 @@ from torch.utils.data import DataLoader
 from torchvision.datasets import MNIST, CIFAR10, ImageFolder
 from lib.data.datasets import get_cifar_anomaly_dataset
 from lib.data.datasets import get_mnist_anomaly_dataset
+from .medcity_dataset import MedCityDataset
+
+import numbers
+import numpy as np
+from PIL import ImageFilter
+
+class RandomGaussianBlur(object):
+    def __init__(self, radius):
+        if isinstance(radius, numbers.Number):
+            self.min_radius = radius
+            self.max_radius = radius
+        elif isinstance(radius, list):
+            if len(radius) != 2:
+                raise Exception(
+                    "`radius` should be a number or a list of two numbers")
+            if radius[1] < radius[0]:
+                raise Exception(
+                    "radius[0] should be <= radius[1]")
+            self.min_radius = radius[0]
+            self.max_radius = radius[1]
+        else:
+            raise Exception(
+                "`radius` should be a number or a list of two numbers")
+
+    def __call__(self, image):
+        radius = np.random.uniform(self.min_radius, self.max_radius)
+        return image.filter(ImageFilter.GaussianBlur(radius))
 
 class Data:
     """ Dataloader containing train and valid sets.
@@ -59,6 +86,35 @@ def load_data(opt):
         valid_ds = MNIST(root='./data', train=False, download=True, transform=transform)
         train_ds, valid_ds = get_mnist_anomaly_dataset(train_ds, valid_ds, int(opt.abnormal_class))
 
+    ## MedCity
+    elif opt.dataset in ['medcity']:
+        if opt.random_augments:
+            print('Data loader detected random augments')
+            transform = transforms.Compose([
+                transforms.RandomResizedCrop(opt.isize),
+                transforms.RandomHorizontalFlip(),
+                RandomGaussianBlur(radius=[0, 5]),
+                transforms.ToTensor(),
+                transforms.Normalize(0.5, 0.5)
+            ])
+
+        else:
+            transform = transforms.Compose([
+                transforms.Resize((opt.isize,opt.isize)),
+                transforms.ToTensor(),
+                transforms.Normalize(0.5, 0.5)
+            ])
+
+        validation_transform = transforms.Compose([
+                transforms.Resize((opt.isize,opt.isize)),
+                transforms.ToTensor(),
+                transforms.Normalize(0.5, 0.5)
+            ])
+
+        train_ds = MedCityDataset(csv_file='./data/training-mlo.csv', root=opt.mediaroot, transform=transform, image_size=opt.isize)
+        valid_ds = MedCityDataset(csv_file='./data/validation-mlo.csv', root=opt.mediaroot, transform=validation_transform, image_size=opt.isize)
+        #test_ds = MedCityDataset(csv_file='./data/test-mlo.csv', root=opt.mediaroot, transform=transform, image_size=opt.isize)
+        
     # FOLDER
     else:
         transform = transforms.Compose([transforms.Resize(opt.isize),
