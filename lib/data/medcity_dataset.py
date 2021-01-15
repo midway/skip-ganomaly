@@ -48,14 +48,6 @@ class MedCityDataset(Dataset):
         else:
             target = 1
         image = Image.open(img_name, 'r').convert('L')
-        
-        # this mirrors the images to always loo like the same breast, not sure if this helps or not
-        # because I am not 100% sure on how well this handles bimodal data
-        #if self.dataset_image_rows.iloc[idx, 4] == 'L':
-        #    image = ImageOps.mirror(image)
-        # this converts a 1 channel image to a 3 channel image
-        #im = np.stack((im,)*3, axis=-1)
-        #image = Image.fromarray(im)
 
         if self.transform:
             image = self.transform(image)
